@@ -3,6 +3,8 @@ import { Component, OnInit, AfterViewInit } from "@angular/core";
 import * as L from "leaflet";
 import { DrawService } from "../services/draw.service";
 import { disableMapMove, enableMapMove } from "../../util/map";
+import { angle } from "../../util/geom";
+import { getRotatedIconHTML } from "../../util/leaflet";
 
 @Component({
   selector: "app-map",
@@ -13,13 +15,14 @@ export class MapComponent implements AfterViewInit {
   private map: L.Map;
   private currentPoints: L.LatLngExpression[] = [];
   private polyline = new L.Polyline(this.currentPoints);
+  private marker: L.Marker;
+  private currentAngle: number = 0;
 
   constructor(private drawService: DrawService) {}
 
   ngAfterViewInit(): void {
     this.initMap();
     this.polyline.setLatLngs(this.drawService.getFakeRoute());
-    this.polyline.redraw();
 
     this.drawService.onDrawToggleSignal.add(this.onDrawToggle);
   }
@@ -56,5 +59,28 @@ export class MapComponent implements AfterViewInit {
 
     tiles.addTo(this.map);
     this.polyline.addTo(this.map);
+
+    this.marker = new L.Marker(this.drawService.getFakeRoute()[0], {
+      icon: L.divIcon({
+        iconAnchor: [25, 25],
+        html: ``
+      })
+    });
+    this.marker.addTo(this.map);
+    this.marker.getIcon();
+    this.rotate();
   }
+
+  rotate = () => {
+    const icon = this.marker.getIcon() as L.DivIcon;
+    const route = this.drawService.getFakeRoute();
+    this.currentAngle = angle(this.map, route[0], route[1]) + 95;
+    const html = getRotatedIconHTML(
+      "assets/icon_50.png",
+      50,
+      this.currentAngle
+    );
+    icon.options.html = html;
+    this.marker.setIcon(icon);
+  };
 }
