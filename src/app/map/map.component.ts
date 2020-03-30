@@ -19,7 +19,7 @@ export class MapComponent implements AfterViewInit {
 
   private currentPoints: MapPoint[] = [];
   private polyline = new L.Polyline(this.currentPoints);
-  
+
   private currentAngle = 0;
   private startTime = NaN;
   private duration = 500;
@@ -27,7 +27,7 @@ export class MapComponent implements AfterViewInit {
   private from: MapPoint;
   private to: MapPoint;
 
-  constructor(private drawService: DataService) {}
+  constructor(private dataService: DataService) {}
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -52,7 +52,7 @@ export class MapComponent implements AfterViewInit {
   };
 
   private addPolylineRoute = () => {
-    this.currentPoints = this.drawService.getFakeRoute().slice();
+    this.currentPoints = this.dataService.getFakeRoute().slice();
     this.polyline.setLatLngs(this.currentPoints);
     this.polyline.addTo(this.map);
   };
@@ -72,7 +72,7 @@ export class MapComponent implements AfterViewInit {
     this.from = this.to ? this.to : this.currentPoints.shift();
     this.to = this.currentPoints.shift();
     if (!this.to) {
-      this.currentPoints = this.drawService.getFakeRoute();
+      this.currentPoints = this.dataService.getFakeRoute();
       this.processNextPoint();
       return;
     }
