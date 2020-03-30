@@ -3,7 +3,7 @@ import { Component, OnInit, AfterViewInit } from "@angular/core";
 import * as L from "leaflet";
 import { DrawService } from "../services/draw.service";
 import { disableMapMove, enableMapMove } from "../../util/map";
-import { angle } from "../../util/geom";
+import { angle, lerp } from "../../util/geom";
 import { getRotatedIconHTML } from "../../util/leaflet";
 
 @Component({
@@ -16,16 +16,63 @@ export class MapComponent implements AfterViewInit {
   private currentPoints: L.LatLngExpression[] = [];
   private polyline = new L.Polyline(this.currentPoints);
   private marker: L.Marker;
-  private currentAngle: number = 0;
+  private currentAngle = 0;
+  private start: number = NaN;
+  private duration: number = 500;
+
+  private from: L.LatLngExpression;
+  private to: L.LatLngExpression;
+
+  private currentDestination: L.LatLngExpression;
 
   constructor(private drawService: DrawService) {}
 
   ngAfterViewInit(): void {
     this.initMap();
-    this.polyline.setLatLngs(this.drawService.getFakeRoute());
 
-    this.drawService.onDrawToggleSignal.add(this.onDrawToggle);
+    this.currentPoints = this.drawService.getFakeRoute().slice();
+    this.addPolylineRoute();
+    this.addCar();
+    // this.drawService.onDrawToggleSignal.add(this.onDrawToggle);
+    this.processNextPoint();
+    
   }
+
+  private processNextPoint = () => {
+    this.from = this.to ? this.to : this.currentPoints.shift();
+    this.to = this.currentPoints.shift();
+    if (!this.to) {
+      this.currentPoints = this.drawService.getFakeRoute().slice();
+      this.processNextPoint();
+      return;
+    }
+
+    const pointA = this.map.latLngToContainerPoint(this.from);
+    const pointB = this.map.latLngToContainerPoint(this.to);
+    // const vector = new L.Point(pointB.x - pointA.x, pointB.y - pointA.y);
+    if (this.to) {
+      this.rotate(this.from, this.to);
+    }
+
+    if (this.to) {
+      requestAnimationFrame(this.animate);
+    }
+  }
+  
+  private addCar = () => {
+    this.marker = new L.Marker(this.currentPoints[0], {
+      icon: L.divIcon({
+        iconAnchor: [25, 25],
+        html: ``
+      })
+    });
+    this.marker.addTo(this.map);
+  };
+
+  private addPolylineRoute = () => {
+    this.polyline.setLatLngs(this.drawService.getFakeRoute());
+    this.polyline.addTo(this.map);
+  };
 
   private onDrawToggle = (isDrawing: boolean) => {
     if (isDrawing) {
@@ -58,23 +105,12 @@ export class MapComponent implements AfterViewInit {
     );
 
     tiles.addTo(this.map);
-    this.polyline.addTo(this.map);
-
-    this.marker = new L.Marker(this.drawService.getFakeRoute()[0], {
-      icon: L.divIcon({
-        iconAnchor: [25, 25],
-        html: ``
-      })
-    });
-    this.marker.addTo(this.map);
-    this.marker.getIcon();
-    this.rotate();
   }
 
-  rotate = () => {
+  rotate = (from: L.LatLngExpression, to: L.LatLngExpression) => {
     const icon = this.marker.getIcon() as L.DivIcon;
-    const route = this.drawService.getFakeRoute();
-    this.currentAngle = angle(this.map, route[0], route[1]) + 95;
+    const route = this.currentPoints;
+    this.currentAngle = angle(this.map, from, to) + 95;
     const html = getRotatedIconHTML(
       "assets/icon_50.png",
       50,
@@ -82,5 +118,32 @@ export class MapComponent implements AfterViewInit {
     );
     icon.options.html = html;
     this.marker.setIcon(icon);
+  };
+
+  moveMarker = (from: L.LatLngExpression, to: L.LatLngExpression) => {
+
+  }
+
+  animate = (deltaTime: number) => {
+    if (isNaN(this.start)) {
+      this.start = deltaTime;
+    }
+    const ratio = (deltaTime - this.start) / this.duration;
+    const pointA = this.map.latLngToContainerPoint(this.to);
+    const pointB = this.map.latLngToContainerPoint(this.marker.getLatLng());
+
+
+    if (ratio >= 1) {
+      this.start = NaN;
+      this.processNextPoint();
+      return;
+    }
+    const l = lerp(this.map, this.from, this.to, ratio);
+    
+    this.currentDestination = this.to;
+  //  console.log((deltaTime - this.start) / this.duration);
+    this.rotate(this.from, this.to);
+    this.marker.setLatLng(l);
+    requestAnimationFrame(this.animate);
   };
 }
