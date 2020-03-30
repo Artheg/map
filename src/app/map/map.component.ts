@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit } from "@angular/core";
 
 import * as L from "leaflet";
-import { DataService } from "../services/draw.service";
+import { DataService } from "../services/data.service";
 import { disableMapMove, enableMapMove } from "../../util/map";
 import { angle, lerp } from "../../util/geom";
 import { getRotatedIconHTML } from "../../util/leaflet";
