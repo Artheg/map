@@ -15,11 +15,13 @@ type MapPoint = L.LatLngExpression & { time: number };
 })
 export class MapComponent implements AfterViewInit {
   private map: L.Map;
+  private marker: L.Marker;
+
   private currentPoints: MapPoint[] = [];
   private polyline = new L.Polyline(this.currentPoints);
-  private marker: L.Marker;
+  
   private currentAngle = 0;
-  private start = NaN;
+  private startTime = NaN;
   private duration = 500;
 
   private from: MapPoint;
@@ -91,13 +93,13 @@ export class MapComponent implements AfterViewInit {
   };
 
   private animate = (deltaTime: number) => {
-    if (isNaN(this.start)) {
-      this.start = deltaTime;
+    if (isNaN(this.startTime)) {
+      this.startTime = deltaTime;
     }
-    const ratio = (deltaTime - this.start) / (this.to.time * 1000);
+    const ratio = (deltaTime - this.startTime) / (this.to.time * 1000);
 
     if (ratio >= 1) {
-      this.start = NaN;
+      this.startTime = NaN;
       this.processNextPoint();
       return;
     }
