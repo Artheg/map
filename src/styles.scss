@@ -1,2 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
 @import "~leaflet/dist/leaflet.css";
+.leaflet-div-icon {
+    width: 64px !important;
+    height: 64px !important;
+    border: none;
+    background: none;
+  }
+  

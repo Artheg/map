@@ -5,18 +5,10 @@ import { route } from './mock.data';
 @Injectable({
   providedIn: "root"
 })
-export class DrawService {
-  public onDrawToggleSignal: Signal<boolean> = new Signal();
-  private isDrawing: boolean;
+export class DataService {
   constructor() {}
 
-  public onDrawClick = () => {
-    this.isDrawing = !this.isDrawing;
-    this.onDrawToggleSignal.dispatch(this.isDrawing);
-    console.log("click", this.isDrawing);
-  };
-
   public getFakeRoute = () => {
-    return route;
+    return route.slice();
   }
 }
