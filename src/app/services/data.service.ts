@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import Signal from "../../util/signal";
-import { route } from './mock.data';
+import { route } from "./mock.data";
 
 @Injectable({
   providedIn: "root"
@@ -10,5 +10,5 @@ export class DataService {
 
   public getFakeRoute = () => {
     return route.slice();
-  }
+  };
 }
