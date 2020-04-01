@@ -2,7 +2,6 @@ import { Component, OnInit, AfterViewInit } from "@angular/core";
 
 import * as L from "leaflet";
 import { DataService } from "../services/data.service";
-import { disableMapMove, enableMapMove } from "../../util/map";
 import { angle, lerp } from "../../util/geom";
 import { getRotatedIconHTML } from "../../util/leaflet";
 
@@ -22,7 +21,6 @@ export class MapComponent implements AfterViewInit {
 
   private currentAngle = 0;
   private startTime = NaN;
-  private duration = 500;
 
   private from: MapPoint;
   private to: MapPoint;
@@ -52,7 +50,7 @@ export class MapComponent implements AfterViewInit {
   };
 
   private addPolylineRoute = () => {
-    this.currentPoints = this.dataService.getFakeRoute().slice();
+    this.currentPoints = this.dataService.getFakeRoute();
     this.polyline.setLatLngs(this.currentPoints);
     this.polyline.addTo(this.map);
   };
