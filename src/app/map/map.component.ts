@@ -29,7 +29,6 @@ export class MapComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initMap();
-
     this.addPolylineRoute();
     this.addCar();
     this.processNextPoint();
